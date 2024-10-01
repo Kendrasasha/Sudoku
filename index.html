@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        header, footer {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+        }
+        main {
+            margin: 20px;
+        }
+        .sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 40px);
+            grid-template-rows: repeat(9, 40px);
+            gap: 5px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .sudoku-grid input {
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            font-size: 20px;
+        }
+        .sudoku-grid input:disabled {
+            background-color: #f0f0f0;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Sudoku Game</h1>
+    </header>
+    
+    <main>
+        <h2>Select Difficulty Level</h2>
+        <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+        <button onclick="generateGrid()">Start Game</button>
+        <div class="sudoku-grid" id="sudoku-grid">
+            <!-- Sudoku grid will be generated here -->
+        </div>
+        <button onclick="checkSolution()">Check Solution</button>
+        <p id="status"></p>
+    </main>
+    
+    <footer>
+        <p>Created by Kendrasasha</p>
+    </footer>
+
+    <script>
+        // Example Sudoku puzzle and solution
+        const sudokuSolution = [
+            [5, 3, 4, 6, 7, 8, 9, 1, 2],
+            [6, 7, 2, 1, 9, 5, 3, 4, 8],
+            [1, 9, 8, 3, 4, 2, 5, 6, 7],
+            [8, 5, 9, 7, 6, 1, 4, 2, 3],
+            [4, 2, 6, 8, 5, 3, 7, 9, 1],
+            [7, 1, 3, 9, 2, 4, 8, 5, 6],
+            [9, 6, 1, 5, 3, 7, 2, 8, 4],
+            [2, 8, 7, 4, 1, 9, 6, 3, 5],
+            [3, 4, 5, 2, 8, 6, 1, 7, 9]
+        ];
+
+        let sudokuPuzzle = [];
+
+        // Generate a puzzle based on the selected difficulty level
+        function generatePuzzle(difficulty) {
+            const puzzle = JSON.parse(JSON.stringify(sudokuSolution)); // Clone the solution
+
+            let cellsToRemove;
+            switch(difficulty) {
+                case 'easy':
+                    cellsToRemove = 20; // Fewer cells removed
+                    break;
+                case 'medium':
+                    cellsToRemove = 40; // Medium number of cells removed
+                    break;
+                case 'hard':
+                    cellsToRemove = 55; // Most cells removed for hard
+                    break;
+            }
+
+            // Randomly remove cells from the puzzle
+            while (cellsToRemove > 0) {
+                const row = Math.floor(Math.random() * 9);
+                const col = Math.floor(Math.random() * 9);
+                if (puzzle[row][col] !== 0) {
+                    puzzle[row][col] = 0;
+                    cellsToRemove--;
+                }
+            }
+
+            return puzzle;
+        }
+
+        // Generate Sudoku grid
+        function generateGrid() {
+            const difficulty = document.getElementById('difficulty').value;
+            sudokuPuzzle = generatePuzzle(difficulty);
+            
+            const gridElement = document.getElementById('sudoku-grid');
+            gridElement.innerHTML = '';
+
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.min = 1;
+                    input.max = 9;
+
+                    if (sudokuPuzzle[row][col] !== 0) {
+                        input.value = sudokuPuzzle[row][col];
+                        input.disabled = true;
+                    }
+
+                    input.id = `cell-${row}-${col}`;
+                    gridElement.appendChild(input);
+                }
+            }
+            document.getElementById('status').innerText = '';  // Clear status
+        }
+
+        // Check if the player's solution matches the correct solution
+        function checkSolution() {
+            let isCorrect = true;
+
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    const input = document.getElementById(`cell-${row}-${col}`);
+                    const value = parseInt(input.value) || 0;
+
+                    if (value !== sudokuSolution[row][col]) {
+                        input.style.backgroundColor = '#f88';
+                        isCorrect = false;
+                    } else {
+                        input.style.backgroundColor = '#a8f';
+                    }
+                }
+            }
+
+            const statusElement = document.getElementById('status');
+            statusElement.innerText = isCorrect ? 'Congratulations! Your solution is correct.' : 'There are mistakes in your solution. Try again!';
+        }
+
+        // Initialize the Sudoku grid on page load
+        window.onload = generateGrid;
+    </script>
+</body>
+</html>
